@@ -26,16 +26,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     //깃허브 테스트 
-    //ㅇㄴㅁㄹㄴㅇㄻㄴㅇㄹ
-
+    
 
     // TODO: 여기에 코드를 입력합니다.
 
-    // 전역 문자열을 초기화합니다.
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_GAMECODING, szWindowClass, MAX_LOADSTRING);
+    // 전역 문자열을 초기화합니다. ::windows api라고 만든거 , 표준 지역 
+    ::LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    ::LoadStringW(hInstance, IDC_GAMECODING, szWindowClass, MAX_LOADSTRING);
+    
+    //1) 윈도우 창 정보 등록 ::없으면 우리가 만든거 
     MyRegisterClass(hInstance);
 
+    //2) 윈도우 창 생성 
     // 애플리케이션 초기화를 수행합니다:
     if (!InitInstance (hInstance, nCmdShow))
     {
@@ -46,6 +48,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
+    //3)  메인 루프 
     // 기본 메시지 루프입니다:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -66,14 +69,34 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 //  용도: 창 클래스를 등록합니다.
 //
+#pragma region MyResgisterClass가 무엇인가?
+/*
+ RegisterClassExW는 Microsoft의 Windows API에 포함된 함수 중 하나로,창 클래스를 등록하는 데 사용됩니다.
+이 함수를 호출하면, 운영 체제는 해당 클래스를 식별하고, 이후 해당 클래스를 사용하여 창을 생성할 수 있게 됩니다.
+
+RegisterClassExW 함수는 WNDCLASSEXW 구조체를 매개변수로 받습니다.
+이 구조체에는 창 클래스의 여러 가지 속성을 정의하는 필드들이 포함되어 있습니다.
+이 필드에는 창의 배경 브러시, 커서, 아이콘, 메뉴, 클래스 이름 등을 설정할 수 있습니다.
+
+그리고 이 함수의 이름에서 'W'는 Wide의 약자로, ;;와이드바이트? 고정길이 2byte 영어나 한국어 차별 x
+이 함수가 유니코드 문자열을 지원함을 나타냅니다.
+Windows API에는 문자열에 대해 ANSI 버전 함수와 
+유니코드 버전 함수를 모두 제공하는데, 'W'가 붙은 함수는 유니코드 버전 함수를 의미합니다.
+
+따라서 RegisterClassExW 함수는 창 클래스를 운영 체제에 등록하고, 이 클래스를 이용해 창을 생성하고 관리하는 기능을 제공하는 것이죠.
+
+*/
+
+#pragma endregion
+
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-    WNDCLASSEXW wcex;
+    WNDCLASSEXW wcex;//이 구조체로 설정 
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
     wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
+    wcex.lpfnWndProc    = WndProc; //함수포인터 이용해서 나중에 이걸로 처리해줘라 
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
