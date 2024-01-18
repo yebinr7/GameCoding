@@ -31,8 +31,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // TODO: 여기에 코드를 입력합니다.
 
     // 전역 문자열을 초기화합니다. ::windows api라고 만든거 , 표준 지역 
-    ::LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    ::LoadStringW(hInstance, IDC_GAMECODING, szWindowClass, MAX_LOADSTRING);
+    //키값 L"GameCoding" 사용하면 전역 문자열 의미 없어져서 지워도됨 
+    /*::LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    ::LoadStringW(hInstance, IDC_GAMECODING, szWindowClass, MAX_LOADSTRING);*/
     
     //1) 윈도우 창 정보 등록 ::없으면 우리가 만든거 
     MyRegisterClass(hInstance);
@@ -44,7 +45,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAMECODING));
+    //단축키 삭제 
+   // HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GAMECODING));
 
     MSG msg;
 
@@ -52,11 +54,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 기본 메시지 루프입니다:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+      /*  if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+           단축키 삭제 
+        }*/
     }
 
     return (int) msg.wParam;
@@ -103,8 +106,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GAMECODING));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_GAMECODING);
-    wcex.lpszClassName  = szWindowClass;
+    wcex.lpszMenuName = nullptr;//MAKEINTRESOURCEW(IDC_GAMECODING); //menu없애고 싶으면 nullptr
+    wcex.lpszClassName  = L"GameCoding"; //키값 
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     return RegisterClassExW(&wcex);
@@ -124,16 +127,41 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   //윈도우창 메뉴바 제거하고 정확하게 800 600 으로 사용하려면
+   //AdjustWindowRect가 알려준다. 몇으로 설정해야 하는지를 
+#pragma region AdjustWindow 설명
+   /*
+   * AdjustWindowRect는 Windows API의 함수 중 하나로, 
+   주어진 클라이언트 영역의 크기에 필요한 전체 창 크기를 계산하는 데 사용됩니다.
+
+클라이언트 영역이란 창의 내부 영역으로
+, 메뉴, 스크롤 바, 테두리 등이 아닌 사용자가 직접 볼 수 있는 영역을 말합니다.
+
+이 함수는 RECT 구조체를 매개변수로 받아
+, 클라이언트 영역의 크기를 기반으로 창의 전체 크기를 계산하고,
+그 결과를 다시 RECT 구조체에 저장합니다.
+이때 창 스타일과 메뉴가 있을 경우 그것들이 창 크기에 미치는 영향을 고려하여 계산합니다.
+
+따라서 AdjustWindowRect 함수는 주어진 클라이언트 영역에 맞는 창의 크기를 계산하는 데 사용되며, 
+이를 통해 원하는 크기의 클라이언트 영역을 가진 창을 정확하게 생성할 수 있습니다.
+   */
+#pragma endregion
+   RECT windowRect = { 0,0,800,600 };
+   ::AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, false);
+
+   //내가 원하는 구조체 대로 윈도우창 만들어줘라 !!! 핵심 
+   //창의 크기 조절 
+   HWND hWnd = CreateWindowW(L"GameCoding", L"Client", WS_OVERLAPPEDWINDOW,
+      CW_USEDEFAULT, 0, windowRect.right- windowRect.left,
+       windowRect.bottom- windowRect.top, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
       return FALSE;
    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   ::ShowWindow(hWnd, nCmdShow);
+   ::UpdateWindow(hWnd);
 
    return TRUE;
 }
