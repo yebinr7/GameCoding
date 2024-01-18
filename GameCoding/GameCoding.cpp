@@ -53,8 +53,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    //3)  메인 루프 
-    // 기본 메시지 루프입니다:
+    //3)  메인 루프  
+    // 기본 메시지 루프입니다: 메세지 들어왔는지 확인 
     while (GetMessage(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
@@ -201,7 +201,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-    case WM_PAINT: //그리는 핵심 이벤트 =>한계점 바뀔때만 실행됨; 게임은 매프레임마다 그려줘야함
+    case WM_PAINT: //그리는 핵심 이벤트 =>한계점 바뀔때만 실행됨; 게임은 매프레임마다 그려줘야함@@@@@@@@@@@@@@@@@@
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
@@ -209,9 +209,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             // 문자 그리기 ;;H는 그냥 정수값(핸들값, 그냥 창에대한 번호, 커널과 통신하기위한)
             WCHAR buffer[100];
-            ::wsprintf(buffer, L"(%d, % d)", mousePosX, mousePosY);
+            ::wsprintf(buffer, L"(%d, %d)", mousePosX, mousePosY);
              
-            ::TextOut(hdc, 100, 100, buffer, 4);//100,100에 문자열4인 글자 보여줘 
+            ::TextOut(hdc, 100, 100, buffer, ::wcslen(buffer));//100,100에 문자열4인 글자 보여줘 
 
             // 사각형 그리기
             ::Rectangle(hdc, 200, 200, 400, 400); 
@@ -229,6 +229,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE: //마우스 이동하면 좌표 받아주는 함수 
         mousePosX = LOWORD(lParam);
         mousePosY = HIWORD(lParam);
+        ::InvalidateRect(hWnd, nullptr, TRUE);//이전에 있던거 계속 지우고 계속 업데이트해줘라 @@@ =>깜빡꺼린다... 한계점 
         // lParam & 0xFFFF; 비트연산자
         // lParam >> 16 
         // 이벤트 번호에 따라서 인자들로 정보를 추출 할 수 있다. 
@@ -244,21 +245,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 // 정보 대화 상자의 메시지 처리기입니다.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
-}
+//INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+//{
+//    UNREFERENCED_PARAMETER(lParam);
+//    switch (message)
+//    {
+//    case WM_INITDIALOG:
+//        return (INT_PTR)TRUE;
+//
+//    case WM_COMMAND:
+//        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+//        {
+//            EndDialog(hDlg, LOWORD(wParam));
+//            return (INT_PTR)TRUE;
+//        }
+//        break;
+//    }
+//    return (INT_PTR)FALSE;
+//}
