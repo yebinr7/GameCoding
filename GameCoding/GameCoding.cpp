@@ -6,6 +6,9 @@
 
 #define MAX_LOADSTRING 100
 
+int mousePosX;
+int mousePosY;
+
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
@@ -55,7 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     while (GetMessage(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DispatchMessage(&msg); //;;들어온 메세지 처리하기
       /*  if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
            단축키 삭제 
@@ -99,7 +102,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbSize = sizeof(WNDCLASSEX);
 
     wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc; //함수포인터 이용해서 나중에 이걸로 처리해줘라 
+    wcex.lpfnWndProc    = WndProc; //함수포인터 이용해서 나중에 메세지 이걸로 처리해줘라 
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
@@ -176,6 +179,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
 //
 //
+//;;3)에 의해서 여기로 옴 메세지 종류에 따라서 각각처리
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -197,18 +201,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-    case WM_PAINT:
+    case WM_PAINT: //그리는 핵심 이벤트 =>한계점 바뀔때만 실행됨; 게임은 매프레임마다 그려줘야함
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
+
+            // 문자 그리기 ;;H는 그냥 정수값(핸들값, 그냥 창에대한 번호, 커널과 통신하기위한)
+            WCHAR buffer[100];
+            ::wsprintf(buffer, L"(%d, % d)", mousePosX, mousePosY);
+             
+            ::TextOut(hdc, 100, 100, buffer, 4);//100,100에 문자열4인 글자 보여줘 
+
+            // 사각형 그리기
+            ::Rectangle(hdc, 200, 200, 400, 400); 
+            // 원 그리기
+            ::Ellipse(hdc, 200, 200, 400, 400);
+            // 선 그리기
+            ::MoveToEx(hdc, 300, 300, nullptr);//300 300에서 시작해서
+            ::LineTo(hdc, 400, 400);
+            ::LineTo(hdc, 500, 300);
+
+
             EndPaint(hWnd, &ps);
         }
+        break;
+    case WM_MOUSEMOVE: //마우스 이동하면 좌표 받아주는 함수 
+        mousePosX = LOWORD(lParam);
+        mousePosY = HIWORD(lParam);
+        // lParam & 0xFFFF; 비트연산자
+        // lParam >> 16 
+        // 이벤트 번호에 따라서 인자들로 정보를 추출 할 수 있다. 
+      
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
-    default:
+    default://기본 처리자 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
